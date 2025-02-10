@@ -26,11 +26,11 @@ public class AccountsServiceImpl implements IAccountsService {
     @Override
     public void createAccount(final CustomerDto customerDto) {
         final Customer customer = CustomerMapper.mapToCustomer(customerDto, new Customer());
-        final Optional<Customer> optionalCustomer = customerRepository
-                .findByMobileNumber(customerDto.getMobileNumber());
+        final Optional<Customer> optionalCustomer =
+                customerRepository.findByMobileNumber(customerDto.getMobileNumber());
         if (optionalCustomer.isPresent()) {
-            throw new CustomerAlreadyExistsException("Customer already registered with given mobile number: " +
-                    customerDto.getMobileNumber());
+            throw new CustomerAlreadyExistsException(
+                    "Customer already registered with given mobile number: " + customerDto.getMobileNumber());
         }
         final Customer savedCustomer = customerRepository.save(customer);
         accountsRepository.save(createNewAccount(savedCustomer));
@@ -38,12 +38,13 @@ public class AccountsServiceImpl implements IAccountsService {
 
     @Override
     public CustomerDto fetchAccount(final String mobileNumber) {
-        final Customer customer = customerRepository.findByMobileNumber(mobileNumber)
+        final Customer customer = customerRepository
+                .findByMobileNumber(mobileNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
-        final Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId())
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Account", "customerId",
-                                customer.getCustomerId().toString()));
+        final Accounts accounts = accountsRepository
+                .findByCustomerId(customer.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Account", "customerId", customer.getCustomerId().toString()));
         final CustomerDto customerDto = CustomerMapper.mapToCustomerDto(customer, new CustomerDto());
         customerDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
         return customerDto;
@@ -54,14 +55,18 @@ public class AccountsServiceImpl implements IAccountsService {
         boolean isUpdated = false;
         final AccountsDto accountsDto = customerDto.getAccountsDto();
         if (accountsDto != null) {
-            Accounts accounts = accountsRepository.findById(accountsDto.getAccountNumber())
+            Accounts accounts = accountsRepository
+                    .findById(accountsDto.getAccountNumber())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Account", "AccountNumber", accountsDto.getAccountNumber().toString()));
+                            "Account",
+                            "AccountNumber",
+                            accountsDto.getAccountNumber().toString()));
             AccountsMapper.mapToAccounts(accountsDto, accounts);
             accounts = accountsRepository.save(accounts);
 
             final Long customerId = accounts.getCustomerId();
-            final Customer customer = customerRepository.findById(customerId)
+            final Customer customer = customerRepository
+                    .findById(customerId)
                     .orElseThrow(() -> new ResourceNotFoundException("Customer", "CustomerID", customerId.toString()));
             CustomerMapper.mapToCustomer(customerDto, customer);
             customerRepository.save(customer);
@@ -72,7 +77,8 @@ public class AccountsServiceImpl implements IAccountsService {
 
     @Override
     public boolean deleteAccount(final String mobileNumber) {
-        final Customer customer = customerRepository.findByMobileNumber(mobileNumber)
+        final Customer customer = customerRepository
+                .findByMobileNumber(mobileNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
         accountsRepository.deleteByCustomerId(customer.getCustomerId());
         customerRepository.deleteById(customer.getCustomerId());

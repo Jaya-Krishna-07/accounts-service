@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.2'
 	id 'io.spring.dependency-management' version '1.1.7'
   id 'com.google.cloud.tools.jib' version '3.4.4'
+  id "com.diffplug.spotless" version "7.0.2"
 }
 
 group = 'com.app'
@@ -38,6 +39,20 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+spotless {
+  java {
+    //palantirJavaFormat('2.50.0').style("GOOGLE").formatJavadoc(true)
+    target fileTree('.') {
+      include '**/*.java'
+      exclude '**/build/**', '**/build-*/**'
+    }
+    toggleOffOn()
+    palantirJavaFormat()
+    removeUnusedImports()
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+}
 jib {
   to {
     image = "jayakrishna07/accounts:1"
